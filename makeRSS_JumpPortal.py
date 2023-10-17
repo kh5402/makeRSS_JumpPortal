@@ -24,7 +24,7 @@ def main():
     channel = root.find("channel")
 
     # 最大ページ数までループ
-    for page in range(1, 31):  # とりあえず30ページまで
+    for page in range(1, 3):  # とりあえず3ページまで
         url = f"{base_url}&page={page}"
         response = requests.get(url)
         html_content = response.text
