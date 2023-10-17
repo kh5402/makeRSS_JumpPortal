@@ -53,6 +53,8 @@ def main():
     # XMLを出力
     xml_str = ET.tostring(root)
     xml_pretty_str = minidom.parseString(xml_str).toprettyxml(indent="  ")
+    xml_pretty_str = os.linesep.join([s for s in xml_pretty_str.splitlines() if s.strip()])  # 空白行を削除
+    
     with open(output_file, "w") as f:
         f.write(xml_pretty_str)
 
