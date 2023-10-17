@@ -23,23 +23,32 @@ def main():
         
     channel = root.find("channel")
 
-    # HTMLの取得と解析
-    response = requests.get(base_url)
-    html_content = response.text
-
-    article_pattern = re.compile(r'<li class="item">\s*<a href="([^"]+)">\s*([^<]+)<span class="date">([^<]+)<\/span>\s*<\/a>\s*<\/li>')
-
-    for match in article_pattern.findall(html_content):
-        link = "https://portal.jamp.jiji.com" + match[0]
-        title = match[1]
-        date = match[2]
+    # 最大ページ数までループ
+    for page in range(1, 31):  # とりあえず30ページまで
+        url = f"{base_url}&page={page}"
+        response = requests.get(url)
+        html_content = response.text
         
-        # 重複を避けるためにURLでチェック
-        if not any(item.find("link").text == link for item in channel.findall("item")):
-            new_item = ET.SubElement(channel, "item")
-            ET.SubElement(new_item, "title").text = title
-            ET.SubElement(new_item, "link").text = link
-            ET.SubElement(new_item, "pubDate").text = date
+        # 記事情報の正規表現
+        article_pattern = re.compile(r'<li class="item">\s*<a href="([^"]+)">\s*([^<]+)<span class="date">([^<]+)<\/span>\s*<\/a>\s*<\/li>')
+
+        found_events = 0
+        for match in article_pattern.findall(html_content):
+            link = "https://portal.jamp.jiji.com" + match[0]
+            title = match[1]
+            date = match[2]
+            
+            # 重複を避けるためにURLでチェック
+            if not any(item.find("link").text == link for item in channel.findall("item")):
+                new_item = ET.SubElement(channel, "item")
+                ET.SubElement(new_item, "title").text = title
+                ET.SubElement(new_item, "link").text = link
+                ET.SubElement(new_item, "pubDate").text = date
+                found_events += 1
+
+        # もし新しい記事が見つからなかったら、ループを抜ける
+        if found_events == 0:
+            break
 
     # XMLを出力
     xml_str = ET.tostring(root)
